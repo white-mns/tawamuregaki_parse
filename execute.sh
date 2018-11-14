@@ -12,7 +12,7 @@ if [ -z "$1" ]; then
     exit
 fi
 
-RESULT_NO=`printf "%03d" $1`
+RESULT_NO=$1
 GENERATE_NO=$2
 
 # 再更新番号の指定がない場合、取得済みで最も再更新番号の大きいファイルを探索して実行する
@@ -26,7 +26,7 @@ if [ -z "$2" ]; then
         fi
 
         echo "test $ZIP_NAME"
-        if [ -f ./data/utf/${ZIP_NAME}.zip ]; then
+        if [ -f ./data/utf/result${ZIP_NAME}.zip ]; then
             echo "execute $ZIP_NAME"
             break
         fi
@@ -42,19 +42,19 @@ fi
 #------------------------------------------------------------------
 
 # 元ファイルを展開
-if [ -f ./data/utf/${ZIP_NAME}.zip ]; then
+if [ -f ./data/utf/result${ZIP_NAME}.zip ]; then
     
     cd ./data/utf
 
     echo "unzip orig..."
-    unzip -q ./${ZIP_NAME}.zip
+    unzip -q ./result${ZIP_NAME}.zip
     
     cd ../../
 
 fi
 
 # 圧縮ファイルが展開されていれば処理の実行
-if [ -d ./data/utf/${ZIP_NAME} ]; then
+if [ -d ./data/utf/result${ZIP_NAME} ]; then
     
     # 解析処理の実行
     perl ./GetData.pl $1 $GENERATE_NO
@@ -64,7 +64,7 @@ if [ -d ./data/utf/${ZIP_NAME} ]; then
     cd ./data/utf/
 
     echo "rm utf..."
-    rm  -r ${ZIP_NAME}
+    rm  -r result${ZIP_NAME}
         
     cd ../../
 
