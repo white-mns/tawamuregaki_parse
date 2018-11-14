@@ -47,7 +47,11 @@ sub Main {
         &UploadData($upload, ConstData::EXE_DATA_PROPER_NAME, "proper_names", "./output/data/proper_name.csv");
     }
     if (ConstData::EXE_CHARA) {
-        &UploadResult($upload, $result_no, $generate_no, ConstData::EXE_CHARA_NAME, "names", "./output/chara/name_");
+        &UploadResult($upload, $result_no, $generate_no, ConstData::EXE_CHARA_NAME,   "names",   "./output/chara/name_");
+    }
+    if (ConstData::EXE_BATTLE) {
+        &UploadResult($upload, $result_no, $generate_no, ConstData::EXE_BATTLE_PAGE,  "pages",   "./output/battle/page_");
+        &UploadResult($upload, $result_no, $generate_no, ConstData::EXE_BATTLE_PARTY, "parties", "./output/battle/party_");
     }
     print "result_no:$result_no,generate_no:$generate_no\n";
     return;

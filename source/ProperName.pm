@@ -18,6 +18,7 @@ require "./source/lib/time.pm";
 require "./source/lib/NumCode.pm";
 
 require "./source/data/StoreProperName.pm";
+require "./source/data/StoreProperStoryData.pm";
 
 use ConstData;        #定数呼び出し
 
@@ -49,9 +50,11 @@ sub Init(){
 
     #インスタンス作成
     $self->{DataHandlers}{ProperName} = StoreProperName->new();
+    $self->{DataHandlers}{StoryData}  = StoreProperStoryData->new();
 
     #他パッケージへの引き渡し用インスタンス
     $self->{CommonDatas}{ProperName} = $self->{DataHandlers}{ProperName};
+    $self->{CommonDatas}{StoryData}  = $self->{DataHandlers}{StoryData};
 
     my $header_list = "";
     my $output_file = "";
@@ -62,6 +65,17 @@ sub Init(){
     ];
     $output_file = "./output/data/". "proper_name" . ".csv";
     $self->{DataHandlers}{ProperName}->Init($header_list, $output_file," ");
+
+    # カード情報の初期化
+    $header_list = [
+                "story_no",
+                "title",
+                "max_page",
+    ];
+    $output_file = "./output/data/". "story_data" . ".csv";
+    $self->{DataHandlers}{StoryData}->Init($header_list, $output_file, [" ", -1]);
+
+
 
     return;
 }

@@ -1,5 +1,5 @@
 #===================================================================
-#        PC名、愛称取得パッケージ
+#        パーティ情報取得パッケージ
 #-------------------------------------------------------------------
 #            (C) 2018 @white_mns
 #===================================================================
@@ -13,11 +13,10 @@ require "./source/lib/Store_HashData.pm";
 use ConstData;        #定数呼び出し
 use source::lib::GetNode;
 
-
 #------------------------------------------------------------------#
 #    パッケージの定義
 #------------------------------------------------------------------#     
-package Name;
+package Party;
 
 #-----------------------------------#
 #    コンストラクタ
@@ -37,8 +36,8 @@ sub Init(){
     my $self = shift;
     ($self->{ResultNo}, $self->{GenerateNo}, $self->{CommonDatas}) = @_;
 
-    $self->{CommonDatas}{NickName} = {};
-    $self->{NickName} = {};
+    $self->{CommonDatas}{NickParty} = {};
+    $self->{NickParty} = {};
     
     #初期化
     $self->{Datas}{Data}  = StoreData->new();
@@ -47,15 +46,15 @@ sub Init(){
     $header_list = [
                 "result_no",
                 "generate_no",
+                "page_no",
                 "e_no",
-                "name",
-                "nickname",
+                "party_order",
     ];
 
     $self->{Datas}{Data}->Init($header_list);
     
     #出力ファイル設定
-    $self->{Datas}{Data}->SetOutputName( "./output/chara/name_" . $self->{ResultNo} . "_" . $self->{GenerateNo} . ".csv" );
+    $self->{Datas}{Data}->SetOutputName( "./output/battle/party_" . $self->{ResultNo} . "_" . $self->{GenerateNo} . ".csv" );
     return;
 }
 
@@ -66,29 +65,40 @@ sub Init(){
 #-----------------------------------#
 sub GetData{
     my $self = shift;
-    my $page_no = shift;
+    my $battle_no = shift;
     my $nodes = shift;
+    
+    $self->{BattleNo} = $battle_no;
 
-    $self->GetNameData($nodes);
+    $self->GetPartyData($nodes);
     
     return;
 }
+
 #-----------------------------------#
-#    愛称データ取得
+#    メンバーデータ取得
 #------------------------------------
 #    引数｜ターン別参加者一覧ノード
 #-----------------------------------#
-sub GetNameData{
+sub GetPartyData{
     my $self  = shift;
     my $turn_table_nodes = shift;
 
     if (!scalar(@$turn_table_nodes)) {return;}
 
+    my $party_order = 0;
+
     my $a_nodes = &GetNode::GetNode_Tag("a", \$$turn_table_nodes[0]);
+
     foreach my $a_node (@$a_nodes) {
         if ($a_node->attr("href") =~ /id=(\d+)/) {
-            $self->{NickName}{$1} = $a_node->as_text;
+            my $e_no = $1;
+
+            $self->{Datas}{Data}->AddData(join(ConstData::SPLIT, ($self->{ResultNo}, $self->{GenerateNo}, $self->{BattleNo}, $e_no, $party_order) ));
+
+            $party_order += 1;
         }
+
     }
 
     return;
@@ -102,10 +112,6 @@ sub GetNameData{
 sub Output(){
     my $self = shift;
     
-    foreach my $e_no (sort{$a <=> $b} keys(%{$self->{NickName}})) {
-        $self->{Datas}{Data}->AddData(join(ConstData::SPLIT, ($self->{ResultNo}, $self->{GenerateNo}, $e_no, "", $self->{NickName}{$e_no})));
-    }
-
     foreach my $object( values %{ $self->{Datas} } ) {
         $object->Output();
     }
