@@ -16,7 +16,7 @@ use source::lib::GetNode;
 #------------------------------------------------------------------#
 #    パッケージの定義
 #------------------------------------------------------------------#     
-package Party;
+package Enemy;
 
 #-----------------------------------#
 #    コンストラクタ
@@ -36,8 +36,8 @@ sub Init(){
     my $self = shift;
     ($self->{ResultNo}, $self->{GenerateNo}, $self->{CommonDatas}) = @_;
 
-    $self->{CommonDatas}{NickParty} = {};
-    $self->{NickParty} = {};
+    $self->{CommonDatas}{NickEnemy} = {};
+    $self->{NickEnemy} = {};
     
     #初期化
     $self->{Datas}{Data}  = StoreData->new();
@@ -47,14 +47,14 @@ sub Init(){
                 "result_no",
                 "generate_no",
                 "battle_no",
-                "e_no",
-                "party_order",
+                "enemy_id",
+                "suffix_id",
     ];
 
     $self->{Datas}{Data}->Init($header_list);
     
     #出力ファイル設定
-    $self->{Datas}{Data}->SetOutputName( "./output/battle/party_" . $self->{ResultNo} . "_" . $self->{GenerateNo} . ".csv" );
+    $self->{Datas}{Data}->SetOutputName( "./output/battle/enemy_" . $self->{ResultNo} . "_" . $self->{GenerateNo} . ".csv" );
     return;
 }
 
@@ -70,17 +70,17 @@ sub GetData{
     
     $self->{BattleNo} = $battle_no;
 
-    $self->GetPartyData($nodes);
+    $self->GetEnemyData($nodes);
     
     return;
 }
 
 #-----------------------------------#
-#    メンバーデータ取得
+#    敵データ取得
 #------------------------------------
 #    引数｜ターン別参加者一覧ノード
 #-----------------------------------#
-sub GetPartyData{
+sub GetEnemyData{
     my $self  = shift;
     my $turn_table_nodes = shift;
 
@@ -88,16 +88,32 @@ sub GetPartyData{
 
     my $party_order = 0;
 
-    my $a_nodes = &GetNode::GetNode_Tag("a", \$$turn_table_nodes[0]);
+    my $enemy_table = $$turn_table_nodes[1];
 
-    foreach my $a_node (@$a_nodes) {
-        if ($a_node->attr("href") =~ /id=(\d+)/) {
-            my $e_no = $1;
+    if (!$enemy_table) { # バグによる開始時無抵抗敗北の結果に対応
+        $enemy_table = $$turn_table_nodes[0];
+    }
 
-            $self->{Datas}{Data}->AddData(join(ConstData::SPLIT, ($self->{ResultNo}, $self->{GenerateNo}, $self->{BattleNo}, $e_no, $party_order) ));
+    my $tr_nodes = &GetNode::GetNode_Tag("tr", \$enemy_table);
 
-            $party_order += 1;
-        }
+    foreach my $tr_node (@$tr_nodes) {
+        my $td_nodes = &GetNode::GetNode_Tag("td", \$tr_node);
+
+        if (scalar(@$td_nodes) < 2) { next; }
+
+        my $b_nodes = &GetNode::GetNode_Tag_Attr("b", "class", "C3", \$$td_nodes[1]);
+
+        if (!scalar(@$b_nodes)) { next; }
+        
+        my $enemy_name = $$b_nodes[0]->as_text;
+        my $suffix_id = 0;
+        if ($enemy_name =~ s/([A-Z]+)$//) {
+            $suffix_id = $self->{CommonDatas}{ProperName}->GetOrAddId($1);
+        };
+
+        my $enemy_id = $self->{CommonDatas}{ProperName}->GetOrAddId($enemy_name);
+
+        $self->{Datas}{Data}->AddData(join(ConstData::SPLIT, ($self->{ResultNo}, $self->{GenerateNo}, $self->{BattleNo}, $enemy_id, $suffix_id) ));
 
     }
 

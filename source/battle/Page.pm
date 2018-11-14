@@ -48,6 +48,8 @@ sub Init(){
                 "story_id",
                 "page_no",
                 "party_num",
+                "enemy_num",
+                "battle_result",
     ];
 
     $self->{Datas}{Page}->Init($header_list);
@@ -73,6 +75,8 @@ sub GetData{
     $self->{BattleNo} = $battle_no;
 
     $self->{PartyNum} = $self->GetPartyNum($table_nodes);
+    $self->{EnemyNum} = $self->GetEnemyNum($table_nodes);
+    $self->{BattleResult} = $self->GetBattleResult($table_nodes);
     $self->GetPageData($b_node);
     
     return;
@@ -99,6 +103,62 @@ sub GetPartyNum{
 
     return $party_num;
 }
+
+#-----------------------------------#
+#    敵人数取得
+#------------------------------------
+#    引数｜ターン別参加者一覧ノード
+#-----------------------------------#
+sub GetEnemyNum{
+    my $self  = shift;
+    my $turn_table_nodes = shift;
+
+    if (!scalar(@$turn_table_nodes)) {return 0;}
+
+    my $enemy_num = 0;
+
+    my $enemy_table = $$turn_table_nodes[1];
+
+    if (!$enemy_table) { # バグによる開始時無抵抗敗北の結果に対応
+        $enemy_table = $$turn_table_nodes[0];
+    }
+
+    my $tr_nodes = &GetNode::GetNode_Tag("tr", \$enemy_table);
+
+    return scalar(@$tr_nodes) - 1;
+}
+
+#-----------------------------------#
+#    勝敗取得
+#------------------------------------
+#    引数｜勝敗テキストノード
+#-----------------------------------#
+sub GetBattleResult{
+    my $self  = shift;
+    my $turn_table_nodes = shift;
+
+    if (!scalar(@$turn_table_nodes)) {return -99;}
+   
+    my $last_table = ""; 
+    foreach my $table (reverse @$turn_table_nodes) {
+        if ($table) {
+            $last_table = $table;
+            last;
+        }
+    }
+
+    if (!$last_table) { return -99;}
+    my @last_table_lefts = $last_table->left;
+    my $last_table_left  = $last_table_lefts[scalar(@last_table_lefts)-1]; # バグによる開始時無抵抗敗北の結果に対応
+
+    my $text = $last_table_left->as_text;
+
+    if    ($text =~ /勝利/)     { return 1;}
+    elsif ($text =~ /敗北/)     { return -1;}
+    elsif ($text =~ /引き分け/) { return 0;}
+    else                        { return -99;}
+}
+
 #-----------------------------------#
 #    タイトル、進行度取得
 #------------------------------------
@@ -120,7 +180,7 @@ sub GetPageData{
         my $max_page = $3;
 
         $self->{CommonDatas}{StoryData}->GetOrAddId(1, $story_no, [$title, $max_page]);
-        $self->{Datas}{Page}->AddData(join(ConstData::SPLIT, ($self->{ResultNo}, $self->{GenerateNo}, $self->{BattleNo}, $story_no, $page_no, $self->{PartyNum})));
+        $self->{Datas}{Page}->AddData(join(ConstData::SPLIT, ($self->{ResultNo}, $self->{GenerateNo}, $self->{BattleNo}, $story_no, $page_no, $self->{PartyNum}, $self->{EnemyNum}, $self->{BattleResult})));
     }
 
 

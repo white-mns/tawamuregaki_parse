@@ -21,6 +21,7 @@ require "./source/lib/NumCode.pm";
 require "./source/chara/Name.pm";
 require "./source/battle/Page.pm";
 require "./source/battle/Party.pm";
+require "./source/battle/Enemy.pm";
 
 use ConstData;        #定数呼び出し
 
@@ -53,6 +54,7 @@ sub Init() {
     if (ConstData::EXE_BATTLE_CHARANAME) { $self->{DataHandlers}{Name}  = Name->new();}
     if (ConstData::EXE_BATTLE_PAGE)      { $self->{DataHandlers}{Page}  = Page->new();}
     if (ConstData::EXE_BATTLE_PARTY)     { $self->{DataHandlers}{Party} = Party->new();}
+    if (ConstData::EXE_BATTLE_ENEMY)     { $self->{DataHandlers}{Enemy} = Enemy->new();}
 
     #初期化処理
     foreach my $object( values %{ $self->{DataHandlers} } ) {
@@ -120,11 +122,13 @@ sub ParsePage{
 
     my $title_b_nodes = &GetNode::GetNode_Tag_Attr("b", "class", "T6", \$tree);
     my $turn_table_nodes = &GetNode::GetNode_Tag_Attr("table", "width", "700", \$tree);
+    my $c6i_td_nodes = &GetNode::GetNode_Tag_Attr("td", "class", "C6i", \$tree);
 
     # データリスト取得
     if (exists($self->{DataHandlers}{Name}))  {$self->{DataHandlers}{Name}->GetData ($battle_no, $turn_table_nodes)};
     if (exists($self->{DataHandlers}{Page}))  {$self->{DataHandlers}{Page}->GetData ($battle_no, $turn_table_nodes, $$title_b_nodes[0])};
     if (exists($self->{DataHandlers}{Party})) {$self->{DataHandlers}{Party}->GetData($battle_no, $turn_table_nodes)};
+    if (exists($self->{DataHandlers}{Enemy})) {$self->{DataHandlers}{Enemy}->GetData($battle_no, $turn_table_nodes)};
 
     $tree = $tree->delete;
 }

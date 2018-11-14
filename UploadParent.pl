@@ -45,6 +45,7 @@ sub Main {
     
     if (ConstData::EXE_DATA) {
         &UploadData($upload, ConstData::EXE_DATA_PROPER_NAME, "proper_names", "./output/data/proper_name.csv");
+        &UploadData($upload, ConstData::EXE_DATA_STORY_DATA,  "story_data",   "./output/data/story_data.csv");
     }
     if (ConstData::EXE_CHARA) {
         &UploadResult($upload, $result_no, $generate_no, ConstData::EXE_CHARA_NAME,   "names",   "./output/chara/name_");
@@ -52,6 +53,7 @@ sub Main {
     if (ConstData::EXE_BATTLE) {
         &UploadResult($upload, $result_no, $generate_no, ConstData::EXE_BATTLE_PAGE,  "pages",   "./output/battle/page_");
         &UploadResult($upload, $result_no, $generate_no, ConstData::EXE_BATTLE_PARTY, "parties", "./output/battle/party_");
+        &UploadResult($upload, $result_no, $generate_no, ConstData::EXE_BATTLE_ENEMY, "enemies", "./output/battle/enemy_");
     }
     print "result_no:$result_no,generate_no:$generate_no\n";
     return;
