@@ -80,7 +80,8 @@ sub Execute{
     
     if (ConstData::EXE_ALLRESULT) {
         #結果全解析
-        $end = GetMaxFileNo($directory,"");
+        $start = GetMinFileNo($directory,"");
+        $end   = GetMaxFileNo($directory,"");
     }else{
         #指定範囲解析
         $start = ConstData::FLAGMENT_START;
@@ -122,11 +123,11 @@ sub ParsePage{
 
     my $title_b_nodes = &GetNode::GetNode_Tag_Attr("b", "class", "T6", \$tree);
     my $turn_table_nodes = &GetNode::GetNode_Tag_Attr("table", "width", "700", \$tree);
-    my $c6i_td_nodes = &GetNode::GetNode_Tag_Attr("td", "class", "C6i", \$tree);
+    my $t6i_td_nodes = &GetNode::GetNode_Tag_Attr("td", "class", "T6i", \$tree);
 
     # データリスト取得
     if (exists($self->{DataHandlers}{Name}))  {$self->{DataHandlers}{Name}->GetData ($battle_no, $turn_table_nodes)};
-    if (exists($self->{DataHandlers}{Page}))  {$self->{DataHandlers}{Page}->GetData ($battle_no, $turn_table_nodes, $$title_b_nodes[0])};
+    if (exists($self->{DataHandlers}{Page}))  {$self->{DataHandlers}{Page}->GetData ($battle_no, $turn_table_nodes, $$title_b_nodes[0], $t6i_td_nodes)};
     if (exists($self->{DataHandlers}{Party})) {$self->{DataHandlers}{Party}->GetData($battle_no, $turn_table_nodes)};
     if (exists($self->{DataHandlers}{Enemy})) {$self->{DataHandlers}{Enemy}->GetData($battle_no, $turn_table_nodes)};
 
@@ -134,7 +135,7 @@ sub ParsePage{
 }
 
 #-----------------------------------#
-#       該当ファイル数を取得
+#       該当ファイル最大番号を取得
 #-----------------------------------#
 #    引数｜ディレクトリ名
 #    　　　ファイル接頭辞
@@ -151,8 +152,30 @@ sub GetMaxFileNo{
         $_ =~ /$prefix(\d+).html/;
         if ($max < $1) {$max = $1;}
     }
-    return $max
+    return $max;
 }
+
+#-----------------------------------#
+#       該当ファイル最小番号を取得
+#-----------------------------------#
+#    引数｜ディレクトリ名
+#    　　　ファイル接頭辞
+##-----------------------------------#
+sub GetMinFileNo{
+    my $directory   = shift;
+    my $prefix    = shift;
+
+    #ファイル名リストを取得
+    my @fileList = grep { -f } glob("$directory/$prefix*.html");
+
+    my $min= 9999999;
+    foreach (@fileList) {
+        $_ =~ /$prefix(\d+).html/;
+        if ($min > $1) {$min = $1;}
+    }
+    return $min;
+}
+
 
 #-----------------------------------#
 #    出力

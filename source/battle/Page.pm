@@ -71,12 +71,13 @@ sub GetData{
     my $battle_no  = shift;
     my $table_nodes = shift;
     my $b_node = shift;
+    my $td_node = shift;
     
     $self->{BattleNo} = $battle_no;
 
     $self->{PartyNum} = $self->GetPartyNum($table_nodes);
     $self->{EnemyNum} = $self->GetEnemyNum($table_nodes);
-    $self->{BattleResult} = $self->GetBattleResult($table_nodes);
+    $self->{BattleResult} = $self->GetBattleResult($table_nodes, $td_node);
     $self->GetPageData($b_node);
     
     return;
@@ -136,6 +137,7 @@ sub GetEnemyNum{
 sub GetBattleResult{
     my $self  = shift;
     my $turn_table_nodes = shift;
+    my $t6i_td_nodes = shift;
 
     if (!scalar(@$turn_table_nodes)) {return -99;}
    
@@ -155,8 +157,13 @@ sub GetBattleResult{
 
     if    ($text =~ /勝利/)     { return 1;}
     elsif ($text =~ /敗北/)     { return -1;}
-    elsif ($text =~ /引き分け/) { return 0;}
-    else                        { return -99;}
+    elsif ($text =~ /決着が/)   { return 0;}
+
+    if (!scalar($t6i_td_nodes)) { return -99;}
+
+    if ($$t6i_td_nodes[0]->as_text =~ /決着が/) { return 0;}
+
+    return -99;
 }
 
 #-----------------------------------#
